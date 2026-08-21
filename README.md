@@ -71,9 +71,7 @@ MCP Server · LangChain / Dify / FastGPT native integration · 10+ domestic AI c
 
 | Inference Backend | Best For |
 |------------------|---------|
-| pipeline         | Fast & stable, no hallucination, runs on CPU or GPU |
-| vlm-engine       | High accuracy, supports vLLM / LMDeploy / mlx ecosystem |
-| hybrid-engine    | High accuracy, native text extraction, low hallucination |
+| pipeline         | Fast & stable, no hallucination, runs on CPU or GPU. Supports PDF, images, DOCX, PPTX, XLSX parsing. |
 
 Domestic AI chips: Ascend · Cambricon · Enflame · MetaX · Moore Threads · Kunlunxin · Iluvatar · Hygon · Biren · T-Head
 </details>
