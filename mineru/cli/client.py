@@ -20,11 +20,8 @@ from mineru.cli.api_protocol import (
 )
 from mineru.cli.backend_options import (
     DEFAULT_BACKEND,
-    DEFAULT_HYBRID_EFFORT,
-    HYBRID_EFFORT_CHOICES,
     PUBLIC_BACKEND_CHOICES,
     normalize_backend,
-    validate_effort,
 )
 from mineru.utils.config_reader import (
     get_max_concurrent_requests as read_max_concurrent_requests,
@@ -40,8 +37,6 @@ from mineru.utils.pdfium_guard import (
 
 from mineru.version import __version__
 from mineru.cli.common import (
-    HybridDependencyError,
-    ensure_backend_dependencies,
     image_suffixes,
     office_suffixes,
     pdf_suffixes,
@@ -111,11 +106,11 @@ def normalize_effort_option(
     param: click.Parameter,
     value: str,
 ) -> str:
-    """将 CLI 输入的 hybrid effort 参数规范为当前公开名称。"""
-    try:
-        return validate_effort(value)
-    except ValueError as exc:
-        raise click.BadParameter(str(exc), ctx=ctx, param=param) from exc
+    """effort 参数已废弃，仅保持兼容性。"""
+    if value is not None:
+        import click
+        click.echo("Warning: --effort option is deprecated and has no effect.", err=True)
+    return None
 
 
 def normalize_ocr_lang_option(
@@ -675,7 +670,7 @@ def build_request_form_data(
     end_page_id: Optional[int],
     image_analysis: bool = True,
     client_side_output_generation: bool = False,
-    effort: str = DEFAULT_HYBRID_EFFORT,
+    effort: str = None,
 ) -> dict[str, str | list[str]]:
     # 开启客户端输出生成时，只关闭客户端会重建的最终产物。
     return_md = not client_side_output_generation
@@ -921,7 +916,7 @@ async def run_orchestrated_cli(
     table_enable: bool,
     image_analysis: bool = True,
     client_side_output_generation: bool = False,
-    effort: str = DEFAULT_HYBRID_EFFORT,
+    effort: str = None,
     extra_cli_args: tuple[str, ...] = (),
 ) -> None:
     if start_page_id < 0:
@@ -929,10 +924,8 @@ async def run_orchestrated_cli(
     if end_page_id is not None and end_page_id < 0:
         raise click.ClickException("--end must be greater than or equal to 0")
     if api_url is None:
-        try:
-            ensure_backend_dependencies(backend)
-        except HybridDependencyError as exc:
-            raise click.ClickException(str(exc)) from exc
+        # Only pipeline backend is supported
+        pass
 
     output_dir.mkdir(parents=True, exist_ok=True)
     documents = collect_input_documents(
@@ -1084,26 +1077,16 @@ async def run_orchestrated_cli(
     metavar="[" + "|".join(PUBLIC_BACKEND_CHOICES) + "]",
     help="""\b
     the backend for parsing pdf:
-      pipeline: More general.
-      vlm-engine: High accuracy via local computing power.
-      vlm-http-client: High accuracy via remote computing power(client suitable for openai-compatible servers).
-      hybrid-engine: Next-generation high accuracy solution via local computing power.
-      hybrid-http-client: High accuracy but requires a little local computing power(client suitable for openai-compatible servers).
-    Without backend specified, hybrid-engine will be used by default.""",
+      pipeline: More general, supports multiple languages, hallucination-free.
+    Without backend specified, pipeline will be used by default.""",
 )
 @click.option(
     "--effort",
     "effort",
     type=str,
-    default=DEFAULT_HYBRID_EFFORT,
-    callback=normalize_effort_option,
-    metavar="[" + "|".join(HYBRID_EFFORT_CHOICES) + "]",
+    default=None,
     help="""\b
-    Hybrid parsing effort:
-      medium: Faster parsing for most documents, balancing accuracy and efficiency. Image/chart analysis is disabled.
-      high: Higher-accuracy parsing with image/chart analysis support, which may take longer.
-    Without effort specified, medium will be used by default.
-    Adapted only for the case where the backend is set to 'hybrid-*'.""",
+    This option is deprecated and has no effect. Only pipeline backend is supported.""",
 )
 @click.option(
     "-l",

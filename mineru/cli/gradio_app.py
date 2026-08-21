@@ -330,15 +330,12 @@ def render_client_i18n_text(i18n, key, locale=None):
 
 def build_backend_choices(http_client_enable, i18n):
     """构建后端选项列表，展示文案与提交给后端的 backend 值保持完全一致。"""
-    choices = list(BACKEND_CHOICE_DEFINITIONS)
-    if http_client_enable:
-        choices.extend(HTTP_CLIENT_BACKEND_CHOICE_DEFINITIONS)
-    return choices
+    return list(BACKEND_CHOICE_DEFINITIONS)
 
 
 def is_http_client_backend(backend_choice):
     """判断当前后端是否为 http-client 类型，用于控制服务器地址配置显隐。"""
-    return isinstance(backend_choice, str) and backend_choice.endswith("-http-client")
+    return False
 
 
 def select_backend_info_key(backend_choice):
@@ -1493,13 +1490,7 @@ def update_doc_show(file_path):
          "The example files to be input need to be placed in the `examples` folder within the directory where the command is currently executed.",
     default=True,
 )
-@click.option(
-    '--enable-http-client',
-    'http_client_enable',
-    type=bool,
-    help="Enable http-client backend to link openai-compatible servers.",
-    default=False,
-)
+
 @click.option(
     '--enable-api',
     'api_enable',

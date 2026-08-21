@@ -54,12 +54,7 @@ from mineru.cli.api_protocol import (
     DEFAULT_MAX_CONCURRENT_REQUESTS,
     DEFAULT_PROCESSING_WINDOW_SIZE,
 )
-from mineru.cli.backend_options import DEFAULT_HYBRID_EFFORT
-from mineru.cli.vlm_preload import (
-    maybe_preload_vlm_model,
-    split_service_and_model_config,
-)
-from mineru.backend.vlm.vlm_analyze import shutdown_cached_models
+from mineru.cli.backend_options import DEFAULT_BACKEND
 from mineru.utils.cli_parser import arg_parse
 from mineru.utils.check_sys_env import is_mac_environment
 from mineru.utils.config_reader import (
@@ -244,16 +239,8 @@ def create_app():
         MINERU_API_ALLOW_PUBLIC_HTTP_CLIENT_ENV,
         default=False,
     )
-    default_service_config, default_model_config = split_service_and_model_config(
-        {
-            "enable_vlm_preload": env_flag_enabled(
-                "MINERU_API_ENABLE_VLM_PRELOAD",
-                default=False,
-            )
-        }
-    )
-    app.state.service_config = default_service_config
-    app.state.config = default_model_config
+    app.state.service_config = {}
+    app.state.config = {}
     app.state.task_manager = None
     return app
 
@@ -264,18 +251,6 @@ app = create_app()
 async def startup_app_state(app: FastAPI) -> "AsyncTaskManager":
     task_manager = AsyncTaskManager(app)
     await task_manager.start()
-    try:
-        service_config = getattr(app.state, "service_config", {})
-        model_config = getattr(app.state, "config", {})
-        maybe_preload_vlm_model(
-            bool(service_config.get("enable_vlm_preload", False)),
-            model_kwargs=model_config,
-        )
-    except Exception:
-        await task_manager.shutdown()
-        app.state.task_manager = None
-        raise
-
     app.state.task_manager = task_manager
     return task_manager
 
@@ -289,11 +264,6 @@ async def shutdown_app_state(app: FastAPI) -> None:
 
 
 def shutdown_runtime_resources() -> None:
-    try:
-        shutdown_cached_models()
-    except Exception as exc:
-        logger.warning(f"Failed to shutdown cached VLM models: {exc}")
-
     try:
         shutdown_pdf_render_executor()
     except Exception as exc:
@@ -1399,14 +1369,7 @@ async def health_check():
 @click.option("--host", default="127.0.0.1", help="Server host (default: 127.0.0.1)")
 @click.option("--port", default=8000, type=int, help="Server port (default: 8000)")
 @click.option("--reload", is_flag=True, help="Enable auto-reload (development mode)")
-@click.option(
-    "--allow-public-http-client",
-    is_flag=True,
-    help=(
-        "Allow *-http-client backends and server_url even when binding the API to "
-        "0.0.0.0 or ::."
-    ),
-)
+
 @click.option(
     "--enable-vlm-preload",
     "enable_vlm_preload",

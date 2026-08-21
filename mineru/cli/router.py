@@ -49,7 +49,7 @@ from mineru.cli.public_http_client_policy import (
     validate_public_http_client_request,
     warn_if_public_http_client_policy as _warn_if_public_http_client_policy,
 )
-from mineru.cli.vlm_preload import build_local_api_cli_args
+# vlm_preload no longer available
 from mineru.version import __version__
 
 TASK_PENDING = "pending"
@@ -1572,14 +1572,7 @@ app = create_app()
 @click.option("--host", default="127.0.0.1", help="Server host (default: 127.0.0.1)")
 @click.option("--port", default=8002, type=int, help="Server port (default: 8002)")
 @click.option("--reload", is_flag=True, help="Enable auto-reload (development mode)")
-@click.option(
-    "--allow-public-http-client",
-    is_flag=True,
-    help=(
-        "Allow *-http-client backends and server_url even when binding the router "
-        "to 0.0.0.0 or ::."
-    ),
-)
+
 @click.option(
     "--upstream-url",
     "upstream_urls",
