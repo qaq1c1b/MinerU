@@ -18,11 +18,9 @@ keywords = [
     "pdf",
     "markdown",
     "ocr",
-    "vlm",
     "docx",
     "pptx",
     "xlsx",
-    "multimodal",
 ]
 classifiers = [
     "Programming Language :: Python :: 3.10",
@@ -47,10 +45,8 @@ dependencies = [
     "json-repair>=0.46.2",
     "opencv-python>=4.11.0.86",
     "fast-langdetect>=0.2.3,<0.3.0",
-    "openai>=1.70.0,<3",
     "beautifulsoup4>=4.13.5,<5",
     "magika>=0.6.2,<1.1.0",
-    "mineru-vl-utils>=1.0.5,<2",
     "python-docx>=1.2.0,<2",
     'pypptx-with-oxml>=1.0.3,<2',
     "mammoth>=1.11.0,<2",
@@ -71,22 +67,6 @@ test = [
     "fuzzywuzzy",
     "tomli; python_version < '3.11'",
 ]
-vlm = [
-    "torch>=2.6.0,<3",
-    "transformers>=4.57.3,<5.0.0",
-    "accelerate>=1.5.1",
-]
-vllm = [
-    "vllm>=0.10.1.1,<0.22.0",
-]
-lmdeploy = [
-    "lmdeploy>=0.10.2,<0.12",
-    "qwen-vl-utils>=0.0.14,<1",
-]
-mlx = [
-    "mlx-vlm>=0.3.3,<0.4",
-    "mlx<=0.31.1",
-]
 s3 = [
     "boto3>=1.28.43",
 ]
@@ -106,16 +86,12 @@ gradio = [
     "gradio-pdf>=0.0.22",
 ]
 core = [
-    "mineru[vlm]",
     "mineru[pipeline]",
     "mineru[gradio]",
 ]
 all = [
     "mineru[core]",
     "mineru[s3]",
-    "mineru[mlx] ; sys_platform == 'darwin'",
-    "mineru[vllm] ; sys_platform == 'linux'",
-    "mineru[lmdeploy] ; sys_platform == 'win32'",
 ]
 
 [project.urls]
@@ -127,9 +103,6 @@ License = "https://github.com/opendatalab/MinerU/blob/master/LICENSE.md"
 
 [project.scripts]
 mineru = "mineru.cli.client:main"
-mineru-vllm-server = "mineru.cli.vlm_server:vllm_server"
-mineru-lmdeploy-server = "mineru.cli.vlm_server:lmdeploy_server"
-mineru-openai-server = "mineru.cli.vlm_server:openai_server"
 mineru-models-download = "mineru.cli.models_download:download_models"
 mineru-api = "mineru.cli.fast_api:main"
 mineru-router = "mineru.cli.router:main"
